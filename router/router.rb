@@ -4,6 +4,7 @@ require "rack/cors"
 require "roda"
 
 require_relative "../controllers/home_controller"
+require_relative "../controllers/browse_controller"
 require_relative "../controllers/manga_controller"
 require_relative "../controllers/read_controller"
 require_relative "../controllers/random_controller"
@@ -35,6 +36,12 @@ class RoliascansAPI < Roda
     r.on "home" do
       r.get do
         HomeController.new.index
+      end
+    end
+
+    r.on "browse" do
+      r.get do
+        BrowseController.new.index(r.params)
       end
     end
 

@@ -10,7 +10,7 @@ Built with:
 - Puma
 - Rack CORS
 
-The API currently exposes an index endpoint, a homepage aggregation endpoint, a manga detail endpoint, a chapter reader endpoint, a random suggestion endpoint, and a keyword search endpoint.
+The API currently exposes an index endpoint, a homepage aggregation endpoint, a paginated browse endpoint, a manga detail endpoint, a chapter reader endpoint, a random suggestion endpoint, and a keyword search endpoint.
 
 ## Project Structure
 
@@ -19,6 +19,7 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, a 
 |-- app.rb
 |-- config.ru
 |-- controllers
+|   |-- browse_controller.rb
 |   |-- home_controller.rb
 |   |-- manga_controller.rb
 |   |-- random_controller.rb
@@ -27,6 +28,7 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, a 
 |-- router
 |   `-- router.rb
 |-- utils
+|   |-- browse_scraper.rb
 |   |-- cache_store.rb
 |   |-- config.rb
 |   |-- home_scraper.rb
@@ -339,6 +341,79 @@ Item fields:
 }
 ```
 
+### `GET /browse`
+
+Loads Roliascan browse results in pages, matching the source site's infinite-scroll behavior.
+
+Use `page` to request the next batch:
+
+```text
+GET /browse?page=1
+GET /browse?page=2
+```
+
+Accepted query params:
+
+- `page`: page number, defaults to `1`.
+- `title`, `search`, `keyword`, or `q`: keyword/title search.
+- `type` or `types`: `Manga`, `Manhwa`, `Manhua`, or `Novel`.
+- `status` or `statuses`: `Cancelled`, `Completed`, `Hiatus`, or `Ongoing`.
+- `year` or `years`: release year.
+- `genres` or `tags`: comma-separated numeric genre IDs.
+- `order` or `sort`: `latest`, `oldest`, `a-z`, `z-a`, `popular`, `release`, `release-asc`, or direct sort values like `post_desc`.
+- `match`: `any` or `all` for multiple genres.
+
+Examples:
+
+```text
+GET /browse?page=1&type=manhwa&status=ongoing
+GET /browse?page=1&title=solo%20leveling
+GET /browse?page=2&year=2026&order=latest
+```
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "page": 1,
+    "next_page": 2,
+    "has_next_page": true,
+    "count": 24,
+    "filters": {
+      "page": 1,
+      "types": ["Manhwa"],
+      "statuses": ["Ongoing"],
+      "sort": "post_desc",
+      "genre_match_mode": "any"
+    },
+    "results": [
+      {
+        "id": "there-is-no-what-if",
+        "title": "There is No \"What If\"",
+        "image": "https://roliascan.com/content/media/manga-278456-cover-1785201934.jpg",
+        "type": "Manhwa",
+        "year": "2026",
+        "status": "Ongoing",
+        "chapter_count": "12",
+        "description": "Save or die. There are no what ifs here.",
+        "updated_at": "2 days ago"
+      }
+    ]
+  }
+}
+```
+
+Note: Roliascan omits some fields for some records. Empty values are removed from each item. Bookmark fields are not included.
+
+Frontend infinite-scroll flow:
+
+1. Call `/browse?page=1`.
+2. Append `data.results` to your list.
+3. When the user scrolls near the bottom, call `/browse?page=<next_page>`.
+4. Stop loading more when `has_next_page` is `false`.
+
 ### `GET /manga/:id`
 
 Scrapes a Roliascan manga detail page.
@@ -563,35 +638,4 @@ Missing search keyword:
 }
 ```
 
-If the source site cannot be reached while loading `/home`, `/manga/:id`, `/read/:id/:chapter_id`, `/random`, or `/search`, the API returns a JSON error with status `502`.
-
-## Development Checks
-
-Syntax check all Ruby files:
-
-```bash
-ruby -c app.rb
-ruby -c config.ru
-ruby -c router/router.rb
-ruby -c controllers/home_controller.rb
-ruby -c controllers/manga_controller.rb
-ruby -c controllers/random_controller.rb
-ruby -c controllers/read_controller.rb
-ruby -c controllers/search_controller.rb
-ruby -c utils/home_scraper.rb
-ruby -c utils/manga_scraper.rb
-ruby -c utils/random_scraper.rb
-ruby -c utils/read_scraper.rb
-ruby -c utils/search_scraper.rb
-```
-
-Quick local checks after starting Puma:
-
-```bash
-curl http://127.0.0.1:9292/
-curl http://127.0.0.1:9292/home
-curl http://127.0.0.1:9292/manga/the-regressed-mercenary-has-a-plan
-curl http://127.0.0.1:9292/read/the-regressed-mercenary-has-a-plan/ch98-276849
-curl http://127.0.0.1:9292/random
-curl "http://127.0.0.1:9292/search?keyword=solo%20leveling"
-```
+If the source site cannot be reached while loading `/home`, `/browse`, `/manga/:id`, `/read/:id/:chapter_id`, `/random`, or `/search`, the API returns a JSON error with status `502`.
