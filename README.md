@@ -10,7 +10,7 @@ Built with:
 - Puma
 - Rack CORS
 
-The API currently exposes an index endpoint, a homepage aggregation endpoint, and a manga detail endpoint.
+The API currently exposes an index endpoint, a homepage aggregation endpoint, a manga detail endpoint, and a chapter reader endpoint.
 
 ## Project Structure
 
@@ -20,7 +20,8 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, an
 |-- config.ru
 |-- controllers
 |   |-- home_controller.rb
-|   `-- manga_controller.rb
+|   |-- manga_controller.rb
+|   `-- read_controller.rb
 |-- router
 |   `-- router.rb
 |-- utils
@@ -29,6 +30,7 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, an
 |   |-- home_scraper.rb
 |   |-- http_client.rb
 |   |-- manga_scraper.rb
+|   |-- read_scraper.rb
 |   `-- json_response.rb
 |-- Gemfile
 |-- Gemfile.lock
@@ -394,7 +396,7 @@ Item fields:
 
 ```json
 {
-  "id": 278019,
+  "chapter_id": "ch99-278019",
   "chapter": "99",
   "chapter_label": "Ch. 99",
   "title": "N/A",
@@ -403,6 +405,8 @@ Item fields:
   "date": "2 days ago"
 }
 ```
+
+Use `chapter_id` with the manga `id` in the reader endpoint.
 
 #### `similar`
 
@@ -419,6 +423,36 @@ Item fields:
 }
 ```
 
+### `GET /read/:id/:chapter_id`
+
+Scrapes a Roliascan chapter reader page.
+
+Use the manga `id` and the `chapter_id` value from `/manga/:id` chapters.
+
+Example:
+
+```text
+GET /read/the-regressed-mercenary-has-a-plan/ch98-276849
+```
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "the-regressed-mercenary-has-a-plan",
+    "chapter_id": "ch98-276849",
+    "prev_chapter_id": "ch97-269090",
+    "next_chapter_id": "ch99-278019",
+    "images": [
+      "https://roliascan.org/storage/chapters/manhwa_11092_98/001.png",
+      "https://roliascan.org/storage/chapters/manhwa_11092_98/002.png"
+    ]
+  }
+}
+```
+
 ## Error Responses
 
 Unknown endpoint:
@@ -431,7 +465,7 @@ Unknown endpoint:
 }
 ```
 
-If the source site cannot be reached while loading `/home` or `/manga/:id`, the API returns a JSON error with status `502`.
+If the source site cannot be reached while loading `/home`, `/manga/:id`, or `/read/:id/:chapter_id`, the API returns a JSON error with status `502`.
 
 ## Development Checks
 
@@ -443,8 +477,10 @@ ruby -c config.ru
 ruby -c router/router.rb
 ruby -c controllers/home_controller.rb
 ruby -c controllers/manga_controller.rb
+ruby -c controllers/read_controller.rb
 ruby -c utils/home_scraper.rb
 ruby -c utils/manga_scraper.rb
+ruby -c utils/read_scraper.rb
 ```
 
 Quick local checks after starting Puma:
@@ -453,4 +489,5 @@ Quick local checks after starting Puma:
 curl http://127.0.0.1:9292/
 curl http://127.0.0.1:9292/home
 curl http://127.0.0.1:9292/manga/the-regressed-mercenary-has-a-plan
+curl http://127.0.0.1:9292/read/the-regressed-mercenary-has-a-plan/ch98-276849
 ```

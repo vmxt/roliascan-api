@@ -206,7 +206,7 @@ class MangaScraper
     chapter = normalize_text(item["chapter"])
 
     {
-      id: integer_or_string(item["id"]),
+      chapter_id: reader_chapter_id_from_url(item["url"]) || reader_chapter_id(chapter, item["id"]),
       chapter: chapter,
       chapter_label: chapter.empty? ? nil : "Ch. #{chapter}",
       title: normalize_text(item["title"]),
@@ -230,7 +230,7 @@ class MangaScraper
     chapter = chapter_label.sub(/\ACh\.?\s*/i, "")
 
     item = {
-      id: integer_or_string(link["data-chapter-id"] || chapter_id_from_url(link["href"])),
+      chapter_id: reader_chapter_id_from_url(link["href"]) || reader_chapter_id(chapter, link["data-chapter-id"]),
       chapter: chapter,
       chapter_label: chapter_label,
       title: chapter_title,
@@ -270,12 +270,14 @@ class MangaScraper
     segments[manga_index + 1]
   end
 
-  def chapter_id_from_url(url)
-    slug = path_segments(url).last
-    return nil if blank?(slug)
+  def reader_chapter_id_from_url(url)
+    path_segments(url).last
+  end
 
-    match = slug.match(/-(\d+)\z/)
-    match ? match[1] : slug
+  def reader_chapter_id(chapter, id)
+    return nil if blank?(chapter) || blank?(id)
+
+    "ch#{chapter}-#{id}"
   end
 
   def path_segments(url)

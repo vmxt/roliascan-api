@@ -5,6 +5,7 @@ require "roda"
 
 require_relative "../controllers/home_controller"
 require_relative "../controllers/manga_controller"
+require_relative "../controllers/read_controller"
 require_relative "../utils/json_response"
 
 class RoliascansAPI < Roda
@@ -38,6 +39,12 @@ class RoliascansAPI < Roda
     r.on "manga", String do |id|
       r.get do
         MangaController.new.show(id)
+      end
+    end
+
+    r.on "read", String, String do |id, chapter_id|
+      r.get do
+        ReadController.new.show(id, chapter_id)
       end
     end
 
