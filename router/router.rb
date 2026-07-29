@@ -6,6 +6,7 @@ require "roda"
 require_relative "../controllers/home_controller"
 require_relative "../controllers/manga_controller"
 require_relative "../controllers/read_controller"
+require_relative "../controllers/random_controller"
 require_relative "../utils/json_response"
 
 class RoliascansAPI < Roda
@@ -45,6 +46,15 @@ class RoliascansAPI < Roda
     r.on "read", String, String do |id, chapter_id|
       r.get do
         ReadController.new.show(id, chapter_id)
+      end
+    end
+
+    r.on "random" do
+      r.get do
+        response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+        RandomController.new.index
       end
     end
 

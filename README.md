@@ -10,7 +10,7 @@ Built with:
 - Puma
 - Rack CORS
 
-The API currently exposes an index endpoint, a homepage aggregation endpoint, a manga detail endpoint, and a chapter reader endpoint.
+The API currently exposes an index endpoint, a homepage aggregation endpoint, a manga detail endpoint, a chapter reader endpoint, and a random suggestion endpoint.
 
 ## Project Structure
 
@@ -21,6 +21,7 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, a 
 |-- controllers
 |   |-- home_controller.rb
 |   |-- manga_controller.rb
+|   |-- random_controller.rb
 |   `-- read_controller.rb
 |-- router
 |   `-- router.rb
@@ -30,6 +31,7 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, a 
 |   |-- home_scraper.rb
 |   |-- http_client.rb
 |   |-- manga_scraper.rb
+|   |-- random_scraper.rb
 |   |-- read_scraper.rb
 |   `-- json_response.rb
 |-- Gemfile
@@ -453,6 +455,26 @@ Response shape:
 }
 ```
 
+### `GET /random`
+
+Suggests 4 random manga/manhwa entries from Roliascan.
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "solo-bug-player",
+      "title": "Solo Bug Player",
+      "image": "https://roliascan.com/content/media/manga-10864-cover-1775133472.png",
+      "type": "Manhwa"
+    }
+  ]
+}
+```
+
 ## Error Responses
 
 Unknown endpoint:
@@ -465,7 +487,7 @@ Unknown endpoint:
 }
 ```
 
-If the source site cannot be reached while loading `/home`, `/manga/:id`, or `/read/:id/:chapter_id`, the API returns a JSON error with status `502`.
+If the source site cannot be reached while loading `/home`, `/manga/:id`, `/read/:id/:chapter_id`, or `/random`, the API returns a JSON error with status `502`.
 
 ## Development Checks
 
@@ -477,9 +499,11 @@ ruby -c config.ru
 ruby -c router/router.rb
 ruby -c controllers/home_controller.rb
 ruby -c controllers/manga_controller.rb
+ruby -c controllers/random_controller.rb
 ruby -c controllers/read_controller.rb
 ruby -c utils/home_scraper.rb
 ruby -c utils/manga_scraper.rb
+ruby -c utils/random_scraper.rb
 ruby -c utils/read_scraper.rb
 ```
 
@@ -490,4 +514,5 @@ curl http://127.0.0.1:9292/
 curl http://127.0.0.1:9292/home
 curl http://127.0.0.1:9292/manga/the-regressed-mercenary-has-a-plan
 curl http://127.0.0.1:9292/read/the-regressed-mercenary-has-a-plan/ch98-276849
+curl http://127.0.0.1:9292/random
 ```
