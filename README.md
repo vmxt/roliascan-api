@@ -10,7 +10,7 @@ Built with:
 - Puma
 - Rack CORS
 
-The API currently exposes an index endpoint and a homepage aggregation endpoint.
+The API currently exposes an index endpoint, a homepage aggregation endpoint, and a manga detail endpoint.
 
 ## Project Structure
 
@@ -19,7 +19,8 @@ The API currently exposes an index endpoint and a homepage aggregation endpoint.
 |-- app.rb
 |-- config.ru
 |-- controllers
-|   `-- home_controller.rb
+|   |-- home_controller.rb
+|   `-- manga_controller.rb
 |-- router
 |   `-- router.rb
 |-- utils
@@ -27,6 +28,7 @@ The API currently exposes an index endpoint and a homepage aggregation endpoint.
 |   |-- config.rb
 |   |-- home_scraper.rb
 |   |-- http_client.rb
+|   |-- manga_scraper.rb
 |   `-- json_response.rb
 |-- Gemfile
 |-- Gemfile.lock
@@ -64,7 +66,7 @@ http://127.0.0.1:9292
 | Variable | Default | Description |
 | --- | --- | --- |
 | `ROLIASCAN_BASE_URL` | `https://roliascan.com` | Source site base URL. |
-| `CACHE_TTL_SECONDS` | `300` | In-memory cache duration for `/home`. |
+| `CACHE_TTL_SECONDS` | `300` | In-memory cache duration for scraper responses. |
 | `CONNECT_TIMEOUT_SECONDS` | `8` | Upstream connection timeout. |
 | `REQUEST_TIMEOUT_SECONDS` | `12` | Upstream read timeout. |
 | `HOME_LIMIT` | `15` | Number of items requested from JSON-backed homepage widgets. |
@@ -331,6 +333,92 @@ Item fields:
 }
 ```
 
+### `GET /manga/:id`
+
+Scrapes a Roliascan manga detail page.
+
+Use the manga slug as `:id`.
+
+Example:
+
+```text
+GET /manga/the-regressed-mercenary-has-a-plan
+```
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "the-regressed-mercenary-has-a-plan",
+    "about": {},
+    "chapters": [],
+    "similar": []
+  }
+}
+```
+
+#### `about`
+
+Manga details from the About tab.
+
+Fields may vary by source page, but commonly include:
+
+```json
+{
+  "manga_id": "11092",
+  "title": "The Regressed Mercenary Has a Plan",
+  "alternative_titles": [
+    "The Regressed Mercenary's Machinations"
+  ],
+  "image": "https://example.com/cover.jpg",
+  "type": "Manhwa",
+  "status": "Ongoing",
+  "released": "2024",
+  "rating": "9.9",
+  "views": "415104",
+  "chapter_count": "100 chapters",
+  "last_updated": "2 months ago",
+  "author": "Park, Jinseok, Gold Haeng",
+  "genres": ["Action", "Fantasy"],
+  "description": "About text..."
+}
+```
+
+#### `chapters`
+
+Chapter entries from the Chapters tab. Roliascan lazy-loads this section, so the API fills it from the same chapter JSON endpoint used by the source page when needed.
+
+Item fields:
+
+```json
+{
+  "id": 278019,
+  "chapter": "99",
+  "chapter_label": "Ch. 99",
+  "title": "N/A",
+  "group_id": 450,
+  "group_name": "Asurascans",
+  "date": "2 days ago"
+}
+```
+
+#### `similar`
+
+Similar manga entries.
+
+Item fields:
+
+```json
+{
+  "id": "artifact-devouring-player",
+  "title": "Artifact-Devouring Player",
+  "type": "Manhwa",
+  "status": "Ongoing"
+}
+```
+
 ## Error Responses
 
 Unknown endpoint:
@@ -343,7 +431,7 @@ Unknown endpoint:
 }
 ```
 
-If the source site cannot be reached while loading `/home`, the API returns a JSON error with status `502`.
+If the source site cannot be reached while loading `/home` or `/manga/:id`, the API returns a JSON error with status `502`.
 
 ## Development Checks
 
@@ -354,7 +442,9 @@ ruby -c app.rb
 ruby -c config.ru
 ruby -c router/router.rb
 ruby -c controllers/home_controller.rb
+ruby -c controllers/manga_controller.rb
 ruby -c utils/home_scraper.rb
+ruby -c utils/manga_scraper.rb
 ```
 
 Quick local checks after starting Puma:
@@ -362,4 +452,5 @@ Quick local checks after starting Puma:
 ```bash
 curl http://127.0.0.1:9292/
 curl http://127.0.0.1:9292/home
+curl http://127.0.0.1:9292/manga/the-regressed-mercenary-has-a-plan
 ```

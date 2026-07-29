@@ -4,6 +4,7 @@ require "rack/cors"
 require "roda"
 
 require_relative "../controllers/home_controller"
+require_relative "../controllers/manga_controller"
 require_relative "../utils/json_response"
 
 class RoliascansAPI < Roda
@@ -31,6 +32,12 @@ class RoliascansAPI < Roda
     r.on "home" do
       r.get do
         HomeController.new.index
+      end
+    end
+
+    r.on "manga", String do |id|
+      r.get do
+        MangaController.new.show(id)
       end
     end
 
