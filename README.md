@@ -10,7 +10,7 @@ Built with:
 - Puma
 - Rack CORS
 
-The API currently exposes an index endpoint, a homepage aggregation endpoint, a manga detail endpoint, a chapter reader endpoint, and a random suggestion endpoint.
+The API currently exposes an index endpoint, a homepage aggregation endpoint, a manga detail endpoint, a chapter reader endpoint, a random suggestion endpoint, and a keyword search endpoint.
 
 ## Project Structure
 
@@ -22,7 +22,8 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, a 
 |   |-- home_controller.rb
 |   |-- manga_controller.rb
 |   |-- random_controller.rb
-|   `-- read_controller.rb
+|   |-- read_controller.rb
+|   `-- search_controller.rb
 |-- router
 |   `-- router.rb
 |-- utils
@@ -33,6 +34,7 @@ The API currently exposes an index endpoint, a homepage aggregation endpoint, a 
 |   |-- manga_scraper.rb
 |   |-- random_scraper.rb
 |   |-- read_scraper.rb
+|   |-- search_scraper.rb
 |   `-- json_response.rb
 |-- Gemfile
 |-- Gemfile.lock
@@ -492,6 +494,53 @@ Response shape:
 }
 ```
 
+### `GET /search`
+
+Searches Roliascan manga/manhwa results by keyword.
+
+Accepted query params:
+
+- `keyword`, `q`, or `query`: search text.
+- `limit`: optional result limit, defaults to `20`, max `50`.
+
+Examples:
+
+```text
+GET /search?keyword=solo%20leveling
+GET /search?q=solo%20leveling&limit=5
+GET /search/solo%20leveling
+```
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "data": {
+    "keyword": "solo leveling",
+    "count": 2,
+    "results": [
+      {
+        "id": "solo-leveling",
+        "title": "Solo Leveling",
+        "image": "https://roliascan.com/content/media/121496l.webp",
+        "alternative_titles": [
+          "Na Honjaman Level Up",
+          "I Level Up Alone"
+        ],
+        "authors": [
+          "Chugong",
+          "Jang"
+        ],
+        "description": "Ten years ago, the Gate appeared...",
+        "type": "Manhwa",
+        "status": "Completed"
+      }
+    ]
+  }
+}
+```
+
 ## Error Responses
 
 Unknown endpoint:
@@ -504,7 +553,17 @@ Unknown endpoint:
 }
 ```
 
-If the source site cannot be reached while loading `/home`, `/manga/:id`, `/read/:id/:chapter_id`, or `/random`, the API returns a JSON error with status `502`.
+Missing search keyword:
+
+```json
+{
+  "success": false,
+  "status": 400,
+  "error": "Search keyword is required"
+}
+```
+
+If the source site cannot be reached while loading `/home`, `/manga/:id`, `/read/:id/:chapter_id`, `/random`, or `/search`, the API returns a JSON error with status `502`.
 
 ## Development Checks
 
@@ -518,10 +577,12 @@ ruby -c controllers/home_controller.rb
 ruby -c controllers/manga_controller.rb
 ruby -c controllers/random_controller.rb
 ruby -c controllers/read_controller.rb
+ruby -c controllers/search_controller.rb
 ruby -c utils/home_scraper.rb
 ruby -c utils/manga_scraper.rb
 ruby -c utils/random_scraper.rb
 ruby -c utils/read_scraper.rb
+ruby -c utils/search_scraper.rb
 ```
 
 Quick local checks after starting Puma:
@@ -532,4 +593,5 @@ curl http://127.0.0.1:9292/home
 curl http://127.0.0.1:9292/manga/the-regressed-mercenary-has-a-plan
 curl http://127.0.0.1:9292/read/the-regressed-mercenary-has-a-plan/ch98-276849
 curl http://127.0.0.1:9292/random
+curl "http://127.0.0.1:9292/search?keyword=solo%20leveling"
 ```

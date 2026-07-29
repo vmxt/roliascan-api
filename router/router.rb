@@ -7,6 +7,7 @@ require_relative "../controllers/home_controller"
 require_relative "../controllers/manga_controller"
 require_relative "../controllers/read_controller"
 require_relative "../controllers/random_controller"
+require_relative "../controllers/search_controller"
 require_relative "../utils/json_response"
 
 class RoliascansAPI < Roda
@@ -55,6 +56,17 @@ class RoliascansAPI < Roda
         response["Pragma"] = "no-cache"
         response["Expires"] = "0"
         RandomController.new.index
+      end
+    end
+
+    r.on "search" do
+      r.get String do |keyword|
+        SearchController.new.index(keyword: keyword, limit: r.params["limit"])
+      end
+
+      r.get do
+        keyword = r.params["keyword"] || r.params["q"] || r.params["query"]
+        SearchController.new.index(keyword: keyword, limit: r.params["limit"])
       end
     end
 
