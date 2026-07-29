@@ -41,6 +41,7 @@ class HomeScraper
     @cache.fetch("home:v1:#{@limit}") do
       html = @client.get(HOME_PATH)
       static_sections = parse_home_html(html)
+      static_sections[:completed_hot][:hot] = hot_chapters if static_sections[:completed_hot][:hot].empty?
 
       static_sections.merge(
         source: "#{Config::BASE_URL}#{HOME_PATH}",
@@ -96,9 +97,13 @@ class HomeScraper
 
   def completed_hot(doc)
     {
-      completed: doc.css("#sidebar-completed > a").filter_map { |card| sidebar_card(card) },
-      hot: doc.css("#sidebar-hot > a").filter_map { |card| sidebar_card(card) }
+      completed: sidebar_cards(doc, "#sidebar-completed"),
+      hot: sidebar_cards(doc, "#sidebar-hot", hot: true)
     }
+  end
+
+  def sidebar_cards(doc, selector, hot: false)
+    doc.css("#{selector} a[href]").filter_map { |card| sidebar_card(card, hot: hot) }
   end
 
   def popular_chapters
@@ -109,6 +114,15 @@ class HomeScraper
       param: "period",
       limit_key: "limit"
     ) { |item| popular_chapter_item(item) }
+  end
+
+  def hot_chapters
+    limit = [@limit, 10].min
+    json = @client.get_json("/auth/popular-chapters", params: { period: "today", limit: limit })
+    Array(json.fetch("chapters", [])).first(10).filter_map { |item| hot_chapter_item(item) }
+  rescue StandardError => e
+    warn "[home_scraper] hot sidebar fallback: #{e.message}"
+    []
   end
 
   def manga_by_status
@@ -197,19 +211,21 @@ class HomeScraper
     )
   end
 
-  def sidebar_card(card)
+  def sidebar_card(card, hot: false)
     image = card.at_css("img[src]")
     metadata = card.xpath(".//div[contains(@class, 'text-neutral-500')]//span")
     chapter_text = metadata.map { |node| normalize_text(node) }.find { |text| text.match?(/Ch\.?/i) }
-    date_text = metadata.map { |node| normalize_text(node) }.reject { |text| text.empty? || text == "|" || text.match?(/Ch\.?/i) }.last
+    trailing_text = metadata.map { |node| normalize_text(node) }.reject { |text| text.empty? || text == "|" || text.match?(/Ch\.?/i) }.last
 
-    compact_item(
+    item = {
       id: id_from_url(card["href"]),
       title: clean_title(card.at_css("h3")&.text || image&.[]("alt")),
       image: image&.[]("src"),
-      chapter_id: chapter_number_from_text(chapter_text),
-      chapter_date: date_text
-    )
+      chapter_id: chapter_number_from_text(chapter_text)
+    }
+    item[hot ? :read_count : :chapter_date] = trailing_text
+
+    compact_item(item)
   end
 
   def popular_chapter_item(item)
@@ -221,12 +237,22 @@ class HomeScraper
     )
   end
 
+  def hot_chapter_item(item)
+    compact_item(
+      id: item["manga_slug"] || item["manga_id"],
+      title: clean_title(item["manga_title"]),
+      image: item["cover"],
+      chapter_id: item["chapter_id"] || item["chapter_number"],
+      read_count: item["read_count"] ? "#{item["read_count"]} reads" : nil
+    )
+  end
+
   def status_manga_item(item)
     compact_item(
       id: item["manga_id"] || id_from_url(item["permalink"]),
       title: clean_title(item["title"]),
       image: item["cover"],
-      status_count: item["status_count"]
+      user_count: "#{item["status_count"]} users"
     )
   end
 

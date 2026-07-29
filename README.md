@@ -124,7 +124,7 @@ Response shape:
 
 Scraped from the homepage carousel.
 
-Item fields:
+Completed item fields:
 
 ```json
 {
@@ -172,7 +172,19 @@ Item fields:
 }
 ```
 
-Note: the source page currently renders Completed in the HTML. The Hot tab may be empty when the source page only ships a lazy-loading placeholder.
+Hot item fields:
+
+```json
+{
+  "id": "manga-slug",
+  "title": "Manga Title",
+  "image": "https://example.com/cover.jpg",
+  "chapter_id": 278586,
+  "read_count": "861 reads"
+}
+```
+
+Note: the source page renders Completed in the HTML. When Hot only ships as a lazy-loading placeholder, the API fills it from Roliascan's popular chapters endpoint.
 
 #### `recently_added_novels`
 
@@ -229,7 +241,7 @@ Item fields:
   "id": 7,
   "title": "Manga Title",
   "image": "https://example.com/cover.webp",
-  "status_count": 656
+  "user_count": "656 users"
 }
 ```
 
