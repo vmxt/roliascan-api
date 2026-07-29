@@ -427,7 +427,7 @@ Item fields:
 
 ### `GET /read/:id/:chapter_id`
 
-Scrapes a Roliascan chapter reader page.
+Scrapes a Roliascan chapter reader page. Image chapters return `images`; novel/text chapters return `content`.
 
 Use the manga `id` and the `chapter_id` value from `/manga/:id` chapters.
 
@@ -438,6 +438,8 @@ GET /read/the-regressed-mercenary-has-a-plan/ch98-276849
 ```
 
 Response shape:
+
+Image chapter:
 
 ```json
 {
@@ -451,6 +453,21 @@ Response shape:
       "https://roliascan.org/storage/chapters/manhwa_11092_98/001.png",
       "https://roliascan.org/storage/chapters/manhwa_11092_98/002.png"
     ]
+  }
+}
+```
+
+Novel chapter:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "as-a-mafia-boss-i-refuse-to-be-an-extra-novel",
+    "chapter_id": "ch442-278571",
+    "prev_chapter_id": "ch441-278549",
+    "next_chapter_id": "ch443-278681",
+    "content": "Damian's eyes tracked four massive weapons descending from different angles...\n\nHe moved as telekinesis activated, pulling his body sideways faster than muscles alone could manage."
   }
 }
 ```

@@ -32,9 +32,9 @@ class ReadScraper
     @cache.fetch("read:v2:#{manga_id}:#{normalized_chapter_id}") do
       html = @client.get("/?p=#{post_id}")
       data = parse_read_html(html, id: manga_id, chapter_id: normalized_chapter_id)
-      data = data.merge(chapter_content(post_id, manga_id, normalized_chapter_id)) if Array(data[:images]).empty?
+      data = data.merge(chapter_content(post_id, manga_id, normalized_chapter_id)) unless readable_content?(data)
 
-      raise ScrapeError.new("No chapter images found", status: 404) if Array(data[:images]).empty?
+      raise ScrapeError.new("No chapter content found", status: 404) unless readable_content?(data)
 
       data
     end
@@ -48,9 +48,10 @@ class ReadScraper
     {
       id: id,
       chapter_id: chapter_id,
-      prev_chapter_id: reader_chapter_id(doc.at_css('link[rel="prev"][href]')&.[]("href")),
-      next_chapter_id: reader_chapter_id(doc.at_css('link[rel="next"][href]')&.[]("href")),
-      images: chapter_images(doc)
+      prev_chapter_id: prev_chapter_id(doc),
+      next_chapter_id: next_chapter_id(doc),
+      images: chapter_images(doc),
+      content: chapter_text(doc)
     }.reject { |_key, value| blank?(value) }
   end
 
@@ -86,6 +87,18 @@ class ReadScraper
     nil
   end
 
+  def prev_chapter_id(doc)
+    reader_chapter_id(doc.at_css('link[rel="prev"][href]')&.[]("href")) ||
+      reader_chapter_id(doc.at_xpath("//a[contains(@href, '/read/') and contains(@title, 'Previous')]")&.[]("href")) ||
+      reader_chapter_id(doc.at_xpath("//a[contains(@href, '/read/') and .//*[normalize-space()='Prev Chapter']]")&.[]("href"))
+  end
+
+  def next_chapter_id(doc)
+    reader_chapter_id(doc.at_css('link[rel="next"][href]')&.[]("href")) ||
+      reader_chapter_id(doc.at_xpath("//a[contains(@href, '/read/') and contains(@title, 'Next')]")&.[]("href")) ||
+      reader_chapter_id(doc.at_xpath("//a[contains(@href, '/read/') and .//*[normalize-space()='Next Chapter']]")&.[]("href"))
+  end
+
   def chapter_images(doc)
     containers = doc.css(".comic-image-container")
     images = containers.filter_map { |container| image_url(container.at_css("img")) }
@@ -94,14 +107,29 @@ class ReadScraper
     images.uniq
   end
 
+  def chapter_text(doc, fragment: false)
+    paragraphs = doc.css(".reader-text p").map { |paragraph| normalize_text(paragraph) }.reject(&:empty?)
+    paragraphs = doc.css("p").map { |paragraph| normalize_text(paragraph) }.reject(&:empty?) if paragraphs.empty? && fragment
+    return novel_text(paragraphs) unless paragraphs.empty?
+
+    text = normalize_text(doc.at_css(".reader-text"))
+    text.empty? ? nil : text
+  end
+
   def chapter_content(post_id, manga_id, chapter_id)
     json = @client.get_json(CHAPTER_CONTENT_ENDPOINT, params: { chapter_id: post_id })
+    content_doc = Nokogiri::HTML.fragment(json["content"].to_s)
 
     {
       id: manga_id,
       chapter_id: chapter_id,
-      images: Array(json["images"]).filter_map { |url| normalize_image_url(url) }.uniq
+      images: Array(json["images"]).filter_map { |url| normalize_image_url(url) }.uniq,
+      content: chapter_text(content_doc, fragment: true)
     }.reject { |_key, value| blank?(value) }
+  end
+
+  def readable_content?(data)
+    !Array(data[:images]).empty? || !blank?(data[:content])
   end
 
   def image_url(image)
@@ -124,6 +152,15 @@ class ReadScraper
     URI.join("#{Config::BASE_URL}/", url).to_s
   rescue URI::InvalidURIError
     nil
+  end
+
+  def normalize_text(value)
+    text = value.respond_to?(:text) ? value.text : value.to_s
+    text.gsub(/\u00a0/, " ").gsub(/\s+/, " ").strip
+  end
+
+  def novel_text(paragraphs)
+    paragraphs.join("\n\n")
   end
 
   def blank?(value)
