@@ -229,11 +229,13 @@ class HomeScraper
   end
 
   def popular_chapter_item(item)
+    chapter_url = read_url_from_item(item)
+
     compact_item(
-      id: item["manga_id"] || item["manga_slug"],
+      id: id_from_url(chapter_url) || item["manga_slug"] || item["manga_id"],
       title: clean_title(item["manga_title"]),
       image: item["cover"],
-      chapter_id: item["chapter_id"] || chapter_id_from_url(item["chapter_url"])
+      chapter_id: read_chapter_id_from_url(chapter_url) || item["chapter_slug"] || item["chapter_id"]
     )
   end
 
@@ -249,7 +251,7 @@ class HomeScraper
 
   def status_manga_item(item)
     compact_item(
-      id: item["manga_id"] || id_from_url(item["permalink"]),
+      id: id_from_url(manga_url_from_item(item)) || item["manga_slug"] || item["slug"] || item["manga_id"],
       title: clean_title(item["title"]),
       image: item["cover"],
       user_count: "#{item["status_count"]} users"
@@ -258,7 +260,7 @@ class HomeScraper
 
   def followed_manga_item(item)
     compact_item(
-      id: item["manga_id"] || id_from_url(item["permalink"]),
+      id: id_from_url(manga_url_from_item(item)) || item["manga_slug"] || item["slug"] || item["manga_id"],
       title: clean_title(item["title"]),
       image: item["cover"],
       follow_count: item["bookmark_count"]
@@ -307,6 +309,50 @@ class HomeScraper
 
     match = slug.match(/-(\d+)\z/)
     match ? match[1].to_i : slug
+  end
+
+  def read_url_from_item(item)
+    %w[chapter_url url permalink link href].each do |key|
+      url = item[key]
+      return url if read_url?(url)
+    end
+
+    html = item["html"] || item["content"]
+    return nil if blank?(html)
+
+    Nokogiri::HTML.fragment(html.to_s).at_css('a[href*="/read/"]')&.[]("href")
+  end
+
+  def read_url?(url)
+    segments = path_segments(url)
+    read_index = segments.index("read")
+    read_index && segments[read_index + 1] && segments[read_index + 2]
+  end
+
+  def read_chapter_id_from_url(url)
+    segments = path_segments(url)
+    read_index = segments.index("read")
+    return nil unless read_index && segments[read_index + 2]
+
+    segments[read_index + 2]
+  end
+
+  def manga_url_from_item(item)
+    %w[manga_url permalink url link href].each do |key|
+      url = item[key]
+      return url if manga_url?(url)
+    end
+
+    html = item["html"] || item["content"]
+    return nil if blank?(html)
+
+    Nokogiri::HTML.fragment(html.to_s).at_css('a[href*="/manga/"]')&.[]("href")
+  end
+
+  def manga_url?(url)
+    segments = path_segments(url)
+    manga_index = segments.index("manga")
+    manga_index && segments[manga_index + 1]
   end
 
   def path_segments(url)

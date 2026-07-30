@@ -94,10 +94,10 @@ Health/index endpoint.
 
 Response:
 
-```json
+```text
 {
-  "success": true,
-  "message": "Welcome to Roliascans-API"
+  "success": boolean,
+  "message": "string"
 }
 ```
 
@@ -107,9 +107,9 @@ Scrapes and aggregates the Roliascan homepage.
 
 Response shape:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": {
     "spotlight_carousel": [],
     "recently_added": [],
@@ -118,8 +118,8 @@ Response shape:
       "hot": []
     },
     "recently_added_novels": [],
-    "source": "https://roliascan.com/home/",
-    "fetched_at": "2026-07-30T00:00:00Z",
+    "source": "string",
+    "fetched_at": "string",
     "popular_chapters": {},
     "manga_by_status": {},
     "most_followed_new_manga": {},
@@ -136,12 +136,12 @@ Scraped from the homepage carousel.
 
 Completed item fields:
 
-```json
+```text
 {
-  "id": "manga-slug",
-  "title": "Manga Title",
-  "image": "https://example.com/cover.jpg",
-  "genre": ["Action", "Fantasy"]
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "genre": ["string"]
 }
 ```
 
@@ -151,13 +151,13 @@ Scraped from the Recently Added grid.
 
 Item fields:
 
-```json
+```text
 {
-  "id": "manga-slug",
-  "title": "Manga Title",
-  "image": "https://example.com/cover.jpg",
-  "chapter_id": 123456,
-  "chapter_date": "3s ago"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "chapter_id": number,
+  "chapter_date": "string"
 }
 ```
 
@@ -172,25 +172,25 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": "manga-slug",
-  "title": "Manga Title",
-  "image": "https://example.com/cover.jpg",
-  "chapter_id": "176",
-  "chapter_date": "1 week ago"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "chapter_id": "string",
+  "chapter_date": "string"
 }
 ```
 
 Hot item fields:
 
-```json
+```text
 {
-  "id": "manga-slug",
-  "title": "Manga Title",
-  "image": "https://example.com/cover.jpg",
-  "chapter_id": 278586,
-  "read_count": "861 reads"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "chapter_id": number,
+  "read_count": "string"
 }
 ```
 
@@ -202,13 +202,13 @@ Scraped from the Recently Added Novels slider.
 
 Item fields:
 
-```json
+```text
 {
-  "id": "novel-slug",
-  "title": "Novel Title",
-  "image": "https://example.com/cover.jpg",
-  "chapter_id": 123456,
-  "chapter_date": "12h ago"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "chapter_id": number,
+  "chapter_date": "string"
 }
 ```
 
@@ -224,12 +224,12 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": 10822,
-  "title": "Manga Title",
-  "image": "https://example.com/cover.webp",
-  "chapter_id": 278586
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "chapter_id": "string"
 }
 ```
 
@@ -246,12 +246,12 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": 7,
-  "title": "Manga Title",
-  "image": "https://example.com/cover.webp",
-  "user_count": "656 users"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "user_count": "string"
 }
 ```
 
@@ -267,12 +267,12 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": 269254,
-  "title": "Manga Title",
-  "image": "https://example.com/cover.jpg",
-  "follow_count": 76
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "follow_count": number
 }
 ```
 
@@ -288,12 +288,12 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": 11126,
-  "title": "Manga Title",
-  "image": "https://example.com/cover.webp",
-  "follow_count": 12
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "follow_count": number
 }
 ```
 
@@ -310,12 +310,12 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": "manga-slug",
-  "title": "Manga Title",
-  "image": "https://example.com/cover.webp",
-  "type": "Manhwa"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "type": "string"
 }
 ```
 
@@ -332,12 +332,12 @@ Groups:
 
 Item fields:
 
-```json
+```text
 {
-  "id": "manga-slug",
-  "title": "Manga Title",
-  "image": "https://example.com/cover.webp",
-  "type": "Manga"
+  "id": "string",
+  "title": "string",
+  "image": "string",
+  "type": "string"
 }
 ```
 
@@ -367,38 +367,38 @@ Examples:
 
 ```text
 GET /browse?page=1&type=manhwa&status=ongoing
-GET /browse?page=1&title=solo%20leveling
-GET /browse?page=2&year=2026&order=latest
+GET /browse?page=1&title=keyword
+GET /browse?page=2&year=year&order=latest
 ```
 
 Response shape:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": {
-    "page": 1,
-    "next_page": 2,
-    "has_next_page": true,
-    "count": 24,
+    "page": number,
+    "next_page": number,
+    "has_next_page": boolean,
+    "count": number,
     "filters": {
-      "page": 1,
-      "types": ["Manhwa"],
-      "statuses": ["Ongoing"],
-      "sort": "post_desc",
-      "genre_match_mode": "any"
+      "page": number,
+      "types": ["string"],
+      "statuses": ["string"],
+      "sort": "string",
+      "genre_match_mode": "string"
     },
     "results": [
       {
-        "id": "there-is-no-what-if",
-        "title": "There is No \"What If\"",
-        "image": "https://roliascan.com/content/media/manga-278456-cover-1785201934.jpg",
-        "type": "Manhwa",
-        "year": "2026",
-        "status": "Ongoing",
-        "chapter_count": "12",
-        "description": "Save or die. There are no what ifs here.",
-        "updated_at": "2 days ago"
+        "id": "string",
+        "title": "string",
+        "image": "string",
+        "type": "string",
+        "year": "string",
+        "status": "string",
+        "chapter_count": "string",
+        "description": "string",
+        "updated_at": "string"
       }
     ]
   }
@@ -423,16 +423,16 @@ Use the manga slug as `:id`.
 Example:
 
 ```text
-GET /manga/the-regressed-mercenary-has-a-plan
+GET /manga/:id
 ```
 
 Response shape:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": {
-    "id": "the-regressed-mercenary-has-a-plan",
+    "id": "string",
     "about": {},
     "chapters": [],
     "similar": []
@@ -446,24 +446,24 @@ Manga details from the About tab.
 
 Fields may vary by source page, but commonly include:
 
-```json
+```text
 {
-  "manga_id": "11092",
-  "title": "The Regressed Mercenary Has a Plan",
+  "manga_id": "string",
+  "title": "string",
   "alternative_titles": [
-    "The Regressed Mercenary's Machinations"
+    "string"
   ],
-  "image": "https://example.com/cover.jpg",
-  "type": "Manhwa",
-  "status": "Ongoing",
-  "released": "2024",
-  "rating": "9.9",
-  "views": "415104",
-  "chapter_count": "100 chapters",
-  "last_updated": "2 months ago",
-  "author": "Park, Jinseok, Gold Haeng",
-  "genres": ["Action", "Fantasy"],
-  "description": "About text..."
+  "image": "string",
+  "type": "string",
+  "status": "string",
+  "released": "string",
+  "rating": "string",
+  "views": "string",
+  "chapter_count": "string",
+  "last_updated": "string",
+  "author": "string",
+  "genres": ["string"],
+  "description": "string"
 }
 ```
 
@@ -473,15 +473,15 @@ Chapter entries from the Chapters tab. Roliascan lazy-loads this section, so the
 
 Item fields:
 
-```json
+```text
 {
-  "chapter_id": "ch99-278019",
-  "chapter": "99",
-  "chapter_label": "Ch. 99",
-  "title": "N/A",
-  "group_id": 450,
-  "group_name": "Asurascans",
-  "date": "2 days ago"
+  "chapter_id": "string",
+  "chapter": "string",
+  "chapter_label": "string",
+  "title": "string",
+  "group_id": number,
+  "group_name": "string",
+  "date": "string"
 }
 ```
 
@@ -493,12 +493,12 @@ Similar manga entries.
 
 Item fields:
 
-```json
+```text
 {
-  "id": "artifact-devouring-player",
-  "title": "Artifact-Devouring Player",
-  "type": "Manhwa",
-  "status": "Ongoing"
+  "id": "string",
+  "title": "string",
+  "type": "string",
+  "status": "string"
 }
 ```
 
@@ -511,24 +511,23 @@ Use the manga `id` and the `chapter_id` value from `/manga/:id` chapters.
 Example:
 
 ```text
-GET /read/the-regressed-mercenary-has-a-plan/ch98-276849
+GET /read/:id/:chapter_id
 ```
 
 Response shape:
 
 Image chapter:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": {
-    "id": "the-regressed-mercenary-has-a-plan",
-    "chapter_id": "ch98-276849",
-    "prev_chapter_id": "ch97-269090",
-    "next_chapter_id": "ch99-278019",
+    "id": "string",
+    "chapter_id": "string",
+    "prev_chapter_id": "string",
+    "next_chapter_id": "string",
     "images": [
-      "https://roliascan.org/storage/chapters/manhwa_11092_98/001.png",
-      "https://roliascan.org/storage/chapters/manhwa_11092_98/002.png"
+      "string"
     ]
   }
 }
@@ -536,15 +535,15 @@ Image chapter:
 
 Novel chapter:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": {
-    "id": "as-a-mafia-boss-i-refuse-to-be-an-extra-novel",
-    "chapter_id": "ch442-278571",
-    "prev_chapter_id": "ch441-278549",
-    "next_chapter_id": "ch443-278681",
-    "content": "Damian's eyes tracked four massive weapons descending from different angles...\n\nHe moved as telekinesis activated, pulling his body sideways faster than muscles alone could manage."
+    "id": "string",
+    "chapter_id": "string",
+    "prev_chapter_id": "string",
+    "next_chapter_id": "string",
+    "content": "string"
   }
 }
 ```
@@ -555,15 +554,15 @@ Suggests 4 random manga/manhwa entries from Roliascan.
 
 Response shape:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": [
     {
-      "id": "solo-bug-player",
-      "title": "Solo Bug Player",
-      "image": "https://roliascan.com/content/media/manga-10864-cover-1775133472.png",
-      "type": "Manhwa"
+      "id": "string",
+      "title": "string",
+      "image": "string",
+      "type": "string"
     }
   ]
 }
@@ -581,35 +580,33 @@ Accepted query params:
 Examples:
 
 ```text
-GET /search?keyword=solo%20leveling
-GET /search?q=solo%20leveling&limit=5
-GET /search/solo%20leveling
+GET /search?keyword=keyword
+GET /search?q=keyword&limit=5
+GET /search/keyword
 ```
 
 Response shape:
 
-```json
+```text
 {
-  "success": true,
+  "success": boolean,
   "data": {
-    "keyword": "solo leveling",
-    "count": 2,
+    "keyword": "string",
+    "count": number,
     "results": [
       {
-        "id": "solo-leveling",
-        "title": "Solo Leveling",
-        "image": "https://roliascan.com/content/media/121496l.webp",
+        "id": "string",
+        "title": "string",
+        "image": "string",
         "alternative_titles": [
-          "Na Honjaman Level Up",
-          "I Level Up Alone"
+          "string"
         ],
         "authors": [
-          "Chugong",
-          "Jang"
+          "string"
         ],
-        "description": "Ten years ago, the Gate appeared...",
-        "type": "Manhwa",
-        "status": "Completed"
+        "description": "string",
+        "type": "string",
+        "status": "string"
       }
     ]
   }
@@ -620,21 +617,21 @@ Response shape:
 
 Unknown endpoint:
 
-```json
+```text
 {
-  "success": false,
-  "status": 404,
-  "error": "Endpoint not found"
+  "success": boolean,
+  "status": number,
+  "error": "string"
 }
 ```
 
 Missing search keyword:
 
-```json
+```text
 {
-  "success": false,
-  "status": 400,
-  "error": "Search keyword is required"
+  "success": boolean,
+  "status": number,
+  "error": "string"
 }
 ```
 
